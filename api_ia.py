@@ -4,26 +4,25 @@ import google.generativeai as genai
 
 app = Flask(__name__)
 
-# Chave da API (deixe em variável de ambiente para segurança)
-genai.configure(api_key="AIzaSyDSIJC26k3lH54DZCFpGYmqa6tqGShEpQo")
+# ✅ Pegar a chave de ambiente OU usar diretamente para testes
+genai.configure(api_key=os.environ.get("GOOGLE_API_KEY") or "AIzaSyDSIJC26k3lH54DZCFpGYmqa6tqGShEpQo")
 
 @app.route('/sugestoes-refeicoes', methods=['POST'])
 def sugestoes_refeicoes():
     dados = request.json
     imc = dados.get('imc')
 
-    model = genai.GenerativeModel('gemini-pro')
+    if imc is None:
+        return jsonify({'erro': 'IMC não fornecido'}), 400
+
     prompt = f"Com base em um IMC de {imc}, sugira 3 refeições saudáveis para o dia."
-
-    response = model.generate_content(prompt)
-
-    # Supondo que response.text retorna algo assim:
-    # "1. Salada de frutas\n2. Peito de frango grelhado\n3. Arroz integral"
-    # Vamos transformar em lista:
-    lista_sugestoes = [item.strip() for item in response.text.split('\n') if item.strip()]
-
-    return jsonify({'sugestoes': lista_sugestoes})
-
+    try:
+        model = genai.GenerativeModel('gemini-pro')
+        response = model.generate_content(prompt)
+        sugestoes = response.text.split("\n")
+        return jsonify({'sugestoes': sugestoes})
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
