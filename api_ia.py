@@ -2,8 +2,8 @@ import os
 from flask import Flask, request, jsonify
 import google.generativeai as genai
 
-# Configure sua chave de API corretamente
-genai.configure(api_key=os.environ.get("GOOGLE_API_KEY") or "AIzaSyDSIJC26k3lH54DZCFpGYmqa6tqGShEpQo")
+# Configure com chave vinda da variável de ambiente
+genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 
 app = Flask(__name__)
 
@@ -18,12 +18,12 @@ def sugestoes_refeicoes():
     prompt = f"Com base em um IMC de {imc}, sugira 3 refeições saudáveis para o dia."
 
     try:
-        model = genai.GenerativeModel(model_name="models/gemini-pro")
+        model = genai.GenerativeModel("gemini-pro")
         response = model.generate_content(prompt)
 
-        # Verifica se a resposta tem conteúdo
         if hasattr(response, "text"):
-            sugestoes = response.text.split("\n")
+            sugestoes = response.text.strip().split("\n")
+            sugestoes = [s.strip("-• ") for s in sugestoes if s.strip()]
             return jsonify({'sugestoes': sugestoes})
         else:
             return jsonify({'erro': 'Sem resposta da IA'}), 500
