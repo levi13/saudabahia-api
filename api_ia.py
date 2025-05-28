@@ -17,7 +17,13 @@ def sugestoes_refeicoes():
 
     response = model.generate_content(prompt)
 
-    return jsonify({'sugestoes': response.text})
+    # Supondo que response.text retorna algo assim:
+    # "1. Salada de frutas\n2. Peito de frango grelhado\n3. Arroz integral"
+    # Vamos transformar em lista:
+    lista_sugestoes = [item.strip() for item in response.text.split('\n') if item.strip()]
+
+    return jsonify({'sugestoes': lista_sugestoes})
+
 
 if __name__ == '__main__':
     app.run(debug=True)
