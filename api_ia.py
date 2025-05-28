@@ -2,15 +2,14 @@ import os
 from flask import Flask, request, jsonify
 import google.generativeai as genai
 
-# Configura a API key a partir da variável de ambiente
+# Configure com chave vinda da variável de ambiente
 genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"))
 
 app = Flask(__name__)
 
-# Rota raiz para evitar erro 404 em GET /
-@app.route('/', methods=['GET'])
+@app.route('/')
 def home():
-    return 'API SaúdeBahia está funcionando!'
+    return "API da IA está no ar!"
 
 @app.route('/sugestoes-refeicoes', methods=['POST'])
 def sugestoes_refeicoes():
@@ -23,20 +22,21 @@ def sugestoes_refeicoes():
     prompt = f"Com base em um IMC de {imc}, sugira 3 refeições saudáveis para o dia."
 
     try:
-        model = genai.GenerativeModel("models/gemini-pro")
-        response = model.generate_content(prompt)
+        # Usar corretamente a criação do modelo
+        model = genai.GenerativeModel(model_name="models/gemini-1.5-flash")
+
+        chat = model.start_chat()
+        response = chat.send_message(prompt)
 
         if hasattr(response, "text"):
             sugestoes = response.text.strip().split("\n")
             sugestoes = [s.strip("-• ") for s in sugestoes if s.strip()]
             return jsonify({'sugestoes': sugestoes})
         else:
-            return jsonify({'erro': 'Sem resposta da IA'}), 500
+            return jsonify({'erro': 'Resposta inesperada da IA'}), 500
 
     except Exception as e:
-        print(f"[ERRO IA]: {e}")  # Útil para debugar no log do Render
         return jsonify({'erro': str(e)}), 500
 
-# OBS: Não use app.run() em produção. O Gunicorn será usado na Render.
 if __name__ == '__main__':
     app.run(debug=True)
