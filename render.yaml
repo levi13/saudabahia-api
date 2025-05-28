@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: saudebahia-api
+    env: python
+    buildCommand: ""
+    startCommand: gunicorn api_ia:app
