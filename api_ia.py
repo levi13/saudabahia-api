@@ -23,7 +23,7 @@ def sugestoes_refeicoes():
     prompt = f"Com base em um IMC de {imc}, sugira 3 refeições saudáveis para o dia."
 
     try:
-        model = genai.GenerativeModel("gemini-pro")
+        model = genai.GenerativeModel("models/gemini-pro")
         response = model.generate_content(prompt)
 
         if hasattr(response, "text"):
